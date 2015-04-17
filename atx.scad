@@ -4,7 +4,7 @@
 
 /* [Global] */
 // This design is composed of a number of separate printable parts:
-part = "assembly"; // [top:Box Top,bottom:Box Bottom,assembly:All Parts Assembled]
+part = "2_all"; // [1_top:Box #1 Top,1_bottom:Box #1 Bottom,1_all:Box #1 Assembled, 2_top:Box #2 Top,2_bottom:Box #2 Bottom,2_all:Box #2 Assembled]
 
 /* [Hidden] */
 
@@ -14,21 +14,29 @@ function standoff2() = [2.65*inch(), .625*inch(), 0];
 function button() = [2.65*inch(), 0.95*inch(), 0];
 
 
-if (part=="assembly") {
-  main();
-} else {
-  main(part);
-}
+main(part);
 
-module main(part="all") {
-  if (part=="bottom" || part=="all") {
+module main(part="2_all") {
+  if (part=="1_bottom" || part=="1_all") {
     box_bottom();
   }
-  if (part=="top" || part=="all") {
+  if (part=="1_top" || part=="1_all") {
     box_top();
   }
-  if (part=="pcb" || part=="all") {
+  if (part=="1_pcb" || part=="1_all") {
     board();
+  }
+  if (part=="2_bottom" || part=="2_all") {
+    box2_bottom();
+  }
+  if (part=="2_top" || part=="2_all") {
+    box2_top();
+  }
+  if (part=="2_pcb" || part=="2_all") {
+    board(atx=true, usb=false, rpi=false, button=false, screw=false);
+  }
+  if (part=="2_all") {
+    rocker();
   }
 }
 
@@ -57,7 +65,8 @@ module splitter() {
     cube([200,200,200]);
 }
 
-module box(thick=2, spaceup=15 /* should be >10 */) {
+module box(thick=2, spaceup=15 /* should be >10 */,
+           atx=true, usb=true, rpi=true, button=true, screw=true) {
   spacexy=2; spacedown=5;
   difference() {
     union() {
@@ -69,7 +78,7 @@ module box(thick=2, spaceup=15 /* should be >10 */) {
           cube([3.2*inch()+2*spacexy, 1.5*inch()+2*spacexy, spacedown+1.6+spaceup]);
 
         // space around connectors, etc
-        board(extra=30, clearance=1.5);
+        board(extra=30, clearance=1.5, atx=atx, usb=usb, rpi=rpi, button=button, screw=screw);
       }
       standoffs(spacedown=spacedown, spaceup=spaceup, thick=thick, holes=false);
     }
@@ -93,22 +102,22 @@ module standoffs(spacedown=5, spaceup=15, thick=2, holes=false) {
     cylinder(d=holes?four_tap:7, h=1.6+spaceup-2+thick/2+c, $fn=res);
 }
 
-module board(extra=0, clearance=0) {
+module board(extra=0, clearance=0, atx=true, usb=true, rpi=true, button=true, screw=true) {
   c=clearance; c2=2*clearance;
   difference() {
     union() {
       // pcb
       pcb_board(clearance=c);
       // atx connector
-      atx_connector(extra=extra, clearance=c);
+      if (atx) { atx_connector(extra=extra, clearance=c); }
       // usb connector
-      usb_connector(extra=extra, clearance=c);
+      if (usb) { usb_connector(extra=extra, clearance=c); }
       // raspberry pi connector
-      rpi_connector(extra=extra, clearance=c);
+      if (rpi) { rpi_connector(extra=extra, clearance=c); }
       // shutdown button
-      shutdown_button(extra=extra, clearance=c);
+      if (button) { shutdown_button(extra=extra, clearance=c); }
       // powertail cable, etc
-      power_out(extra=extra, clearance=c);
+      if (screw) { power_out(extra=extra, clearance=c); }
     }
     if (extra==0) {
       // mounting holes
@@ -204,4 +213,62 @@ module screw_terminal(extra=0,clearance=0) {
   front=7.5-4.2;
   translate([-front-extra-c,-(5+3.1)-c,-c])
     cube([7.5+extra+c2,3.1+5+3.1+c2,10+c2]);
+}
+
+module bananas(h=10, spacexy=2, thick=2, hole=true) {
+  cl=.008*inch(); res=40;
+  translate([32,1.5*inch()+spacexy+thick,18]) rotate([-90,0,0])
+  // two rows of three, on standard .75 in spacing
+  for (x=[-1,0,1]) {
+    for (y=[-.5,.5]) {
+      translate([x*.75*inch(), y*.75*inch(), 0]) {
+        intersection() {
+          cylinder(d=.298*inch() + cl, h=h, center=true, $fn=res);
+          cube([.265*inch() + cl, .4*inch() + cl, h + 1], center=true);
+        }
+      }
+    }
+  }
+}
+
+module rocker(h=10, spacexy=2, thick=2, hole=false) {
+  cl=.008*inch(); res=40;
+  translate([2.8*inch()+1,1.5*inch()+spacexy+thick,18]) rotate([-90,-90,0])
+  if (hole) {
+    cylinder(d=20.2+cl, h=h, center=true, $fn=res);
+    translate([-.079*inch()/2,0,-h/2])
+      cube([.079*inch()+cl, ((.822-.778) + .778/2)*inch() + cl, h]);
+  } else {
+    cylinder(d=.901*inch(), h=.18*inch(), $fn=res);
+    translate([0,0,-.185*inch()])
+      cylinder(d=.779*inch(), h=.19*inch(), $fn=res);
+    translate([0,0,-.3*inch()])
+      cube([.661*inch(), .469*inch(), .6*inch()], center=true);
+  }
+}
+
+module box2(spaceup=33) {
+  thick=2;
+  difference() {
+    box(thick=thick, spaceup=spaceup, atx=true, usb=false, rpi=false, button=false, screw=false);
+    rocker(hole=true);
+    bananas();
+  }
+  // reinforcement
+  translate(standoff1()+[-8,1,16.6]) cube([7,5.5,19.5]);
+  translate(standoff2()+[0,-19,16.6]) cube([17,17.5,19.5]);
+}
+
+module box2_top() {
+  intersection() {
+    box2();
+    splitter();
+  }
+}
+
+module box2_bottom() {
+  difference() {
+    box2();
+    splitter();
+  }
 }
