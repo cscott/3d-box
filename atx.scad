@@ -255,20 +255,40 @@ module box2(spaceup=33) {
     bananas();
   }
   // reinforcement
-  translate(standoff1()+[-8,1,16.6]) cube([7,5.5,19.5]);
-  translate(standoff2()+[0,-19,16.6]) cube([17,17.5,19.5]);
+  difference() {
+    union() {
+      translate(standoff1()+[-8,-3,16.6]) cube([10,9.5,19.5]);
+      translate(standoff2()+[-2.5,-19,16.6]) cube([19.5,21.4,19.5]);
+    }
+    standoffs(spaceup=spaceup, holes=true);
+    translate(standoff2()+[7,-9,16]) #cylinder(d=15, h=19);
+  }
 }
 
 module box2_top() {
-  intersection() {
+  difference() {
     box2();
-    splitter();
+    splitter2();
   }
 }
 
 module box2_bottom() {
-  difference() {
+  intersection() {
     box2();
-    splitter();
+    splitter2();
+  }
+}
+
+module splitter2(spacexy=2, spaceup=33, thick=2) {
+  large=50; e=.02;
+  difference() {
+    translate([-spacexy-thick-1,0,0])
+      scale([1,1,-1])
+      rotate([0,90,0])
+      linear_extrude(height=3.2*inch()+2*spacexy+2*thick+2)
+      // x coordinate is z here.
+      polygon(points=[[-large,-large],[1,-large],[1,-spacexy],[1.6+spaceup,1.5*inch()+spacexy-0.1],[1.6+spaceup,large],[-large,large]]);
+    translate([-spacexy+e,-spacexy+e,1])
+      cube([3.2*inch()+2*spacexy -2*e, 1.5*inch()+2*spacexy -2*e, 1.6 + spaceup - 1 + e]);
   }
 }
