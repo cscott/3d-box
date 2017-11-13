@@ -69,7 +69,7 @@ FootHole        = 1;
 
 
 /* [STL element to export] */
-part = "all"; // [tshell,bshell,fpanl,bpanl]
+part = "all"; // [tshell,bshell,fpanel,bpanel]
 /* [Hidden] */
 
 box_orig(part=part);
@@ -215,54 +215,45 @@ module Coque(Length=Length, Width=Width, Height=Height, Thick=Thick*2, Filet=Fil
 
 /////////////////////// - Foot with base filet - /////////////////////////////
 module foot(FootDia,FootHole,FootHeight,Thick=Thick,Filet=Filet,FootDia=FootDia,FootHeight=FootHeight,Couleur1="black"){
-    Filet=2;
-    color(Couleur1)
-    translate([0,0,Filet-1.5])
-    difference(){
+  epsilon=0.1;
+  color(Couleur1)
+    translate([0,0,-epsilon])
+    difference() {
+      difference() {
+        cylinder(d=FootDia+Filet,FootHeight+epsilon, $fn=100);
 
-    difference(){
-            //translate ([0,0,-Thick]){
-                cylinder(d=FootDia+Filet,FootHeight-Thick, $fn=100);
-                        //}
-                    rotate_extrude($fn=100){
-                            translate([(FootDia+Filet*2)/2,Filet,0]){
-                                    minkowski(){
-                                            square(10);
-                                            circle(Filet, $fn=100);
-                                        }
-                                 }
-                           }
-                   }
-            cylinder(d=FootHole,FootHeight+1, $fn=100);
-               }
+        rotate_extrude($fn=100) {
+          translate([(FootDia+Filet*2)/2,Filet,0]) {
+            minkowski() {
+              square(FootHeight);
+              circle(Filet, $fn=100);
+            }
+          }
+        }
+      }
+      if(FootHole>0) cylinder(d=FootHole,FootHeight+1, $fn=100);
+    }
 }// Fin module foot
 
-module Feet(Thick=Thick,Filet=Filet,FootDia=FootDia,FootHole=FootHole,FootHeight=FootHeight,PCBLength=PCBLength,PCBWidth=PCBWidth,Couleur1="gray"){
+module Feet(Thick=Thick,Filet=Filet,FootDia=FootDia,FootHole=FootHole,FootHeight=FootHeight,FootPos=[],PCBLength=PCBLength,PCBWidth=PCBWidth,PCBOnly=false,Couleur1="gray"){
 //////////////////// - PCB only visible in the preview mode - /////////////////////
-    translate([3*Thick+2,Thick+5,FootHeight+(Thick/2)-0.5]){
-
-    %square ([PCBLength+10,PCBWidth+10]);
-       translate([PCBLength/2,PCBWidth/2,0.5]){
+    if (PCBOnly) {
+    translate([3*Thick+m,Thick,FootHeight+Thick]){
+      cube([PCBLength,PCBWidth,0.5]);
+      translate([PCBLength/2,PCBWidth/2,0.5]){
+      linear_extrude(height=0.5)
         color("Olive")
-        %text("PCB", halign="center", valign="center", font="Arial black");
-       }
+        text("PCB", halign="center", valign="center", font="Arial black");
+      }
     } // Fin PCB
-
+    } else {
+     %Feet(PCBOnly=true,Thick=Thick,Filet=Filet,FootDia=FootDia,FootHole=FootHole,FootHeight=FootHeight,PCBLength=PCBLength,PCBWidth=PCBWidth,Couleur1=Couleur1);
 
 ////////////////////////////// - 4 Feet - //////////////////////////////////////////
-    translate([3*Thick+7,Thick+10,Thick/2]){
+   translate([3*Thick+m,Thick,Thick])
+   for(pos = FootPos) translate(pos)
         foot(FootDia,FootHole,FootHeight,Thick=Thick,Filet=Filet,FootDia=FootDia,FootHeight=FootHeight,Couleur1=Couleur1);
-    }
-    translate([(3*Thick)+PCBLength+7,Thick+10,Thick/2]){
-        foot(FootDia,FootHole,FootHeight,Thick=Thick,Filet=Filet,FootDia=FootDia,FootHeight=FootHeight,Couleur1=Couleur1);
-        }
-    translate([(3*Thick)+PCBLength+7,(Thick)+PCBWidth+10,Thick/2]){
-        foot(FootDia,FootHole,FootHeight,Thick=Thick,Filet=Filet,FootDia=FootDia,FootHeight=FootHeight,Couleur1=Couleur1);
-        }
-    translate([3*Thick+7,(Thick)+PCBWidth+10,Thick/2]){
-        foot(FootDia,FootHole,FootHeight,Thick=Thick,Filet=Filet,FootDia=FootDia,FootHeight=FootHeight,Couleur1=Couleur1);
-    }
-
+   }
 } // Fin du module Feet
 
 
@@ -338,7 +329,8 @@ module FPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1="bla
     rotate([90,0,90]){
         color(Couleur2){
 //                     <- Cutting shapes from here ->
-        CylinderHole(1, 29, 12+4, 8);
+          children(0);
+//        CylinderHole(1, 29, 12+4, 8);
 //                            <- To here ->
            }
        }
@@ -348,8 +340,9 @@ module FPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1="bla
         translate ([-.5,0,0])
         rotate([90,0,90]){
 //                      <- Adding text from here ->
-        LText(1,3,24,"Arial Black",4,"TO PANEL");
-        LText(1,3.5,5,"Arial Black",3,"Made by CSA");
+          children(1);
+//        LText(1,3,24,"Arial Black",4,"TO PANEL");
+//        LText(1,3.5,5,"Arial Black",3,"Made by CSA");
 //                            <- To here ->
             }
       }
@@ -365,7 +358,8 @@ module BPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1="bla
         color(Couleur2){
         UsbHole=[13.5,5.5];
 //                     <- Cutting shapes from here ->
-        SquareHole  (1,27-m-(UsbHole.x/2),26-(UsbHole.y/2),UsbHole.x,UsbHole.y,1); //(On/Off, Xpos,Ypos,Length,Width,Filet)
+          children(0);
+//        SquareHole  (1,27-m-(UsbHole.x/2),26-(UsbHole.y/2),UsbHole.x,UsbHole.y,1); //(On/Off, Xpos,Ypos,Length,Width,Filet)
 //                            <- To here ->
            }
        }
@@ -375,8 +369,9 @@ module BPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1="bla
         translate ([-.5,0,0])
         rotate([90,0,90]){
 //                      <- Adding text from here ->
-        LText(1,4,16,"Arial Black",5,"Z-Wave");
-        LText(1,4, 8,"Arial Black",5,"Buzzer");
+          children(1);
+//        LText(1,4,16,"Arial Black",5,"Z-Wave");
+//        LText(1,4, 8,"Arial Black",5,"Buzzer");
 //                            <- To here ->
             }
       }
@@ -385,7 +380,7 @@ module BPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1="bla
 
 /////////////////////////// <- Main part -> /////////////////////////
 
-module box_orig(part="all", Length=Length, Width=Width, Thick=Thick, Filet=Filet, m=m, Couleur1="Orange"/*shell color*/, Couleur2="OrangeRed"/*panels color*/, Resolution=Resolution, Vent=true, Vent_width=Vent_width, PCBPosX=PCBPosX, PCBPosY=PCBPosY, PCBFeet=true, FootDia=FootDia, FootHole=FootHole, FootHeight=FootHeight, PCBLength=PCBLength, PCBWidth=PCBWidth) {
+module box_orig(part="all", Length=Length, Width=Width, Thick=Thick, Filet=Filet, m=m, Couleur1="Orange"/*shell color*/, Couleur2="OrangeRed"/*panels color*/, Resolution=Resolution, Vent=true, Vent_width=Vent_width, PCBPosX=PCBPosX, PCBPosY=PCBPosY, PCBLength=PCBLength, PCBWidth=PCBWidth, PCBFeet=true, FootPos=[], FootDia=FootDia, FootHole=FootHole, FootHeight=FootHeight) {
 
 // Thick X 2 - making decorations thicker if it is a vent to make sure they go through shell
 Dec_Thick       = Vent ? Thick*2 : Thick;
@@ -410,23 +405,57 @@ if(part=="bshell"||part=="all")
         }
 
 // Pied support PCB - PCB feet
-if (PCBFeet && (part=="bshell" || part=="all"))
+if (PCBFeet && (part=="bshell" || part=="all" || part=="pcb"))
 // Feet
         translate([PCBPosX,PCBPosY,0]){
-        Feet(Thick=Thick,Filet=Filet,FootDia=FootDia,FootHole=FootHole,FootHeight=FootHeight,PCBLength=PCBLength,PCBWidth=PCBWidth,Couleur1=Couleur1);
+        Feet(Thick=Thick,Filet=Filet,FootDia=FootDia,FootHole=FootHole,FootHeight=FootHeight,PCBLength=PCBLength,PCBWidth=PCBWidth,FootPos=FootPos,Couleur1="gray",PCBOnly=(part=="pcb"));
         }
 
 // Panneau avant - Front panel  <<<<<< Text and holes only on this one.
 //rotate([0,-90,-90])
-if (part=="all"||part=="fpanl")
+if (part=="all"||part=="fpanel")
         translate([Length-(Thick*2+m/2),Thick+m/2,Thick+m/2])
-        FPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1=Couleur1,Couleur2=Couleur2);
+        FPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1=Couleur1,Couleur2=Couleur2) {
+          if ($nchildren>0) children(0);
+          if ($nchildren>1) children(1);
+        }
 
 //Panneau arrière - Back panel
 PanelCenter=[Thick/2,(Width-(Thick*2+m))/2,0];
-if (part=="all"||part=="bpanl")
+if (part=="all"||part=="bpanel")
         color(Couleur2)
         translate([Thick+m/2,Thick+m/2,Thick+m/2])
         translate(PanelCenter) rotate([0,0,180]) translate(-PanelCenter)
-        BPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1=Couleur1,Couleur2=Couleur2);
+        BPanL(Length=Length,Width=Width,Thick=Thick,Filet=Filet,m=m,Couleur1=Couleur1,Couleur2=Couleur2) {
+          if ($nchildren>2) children(2);
+          if ($nchildren>3) children(3);
+        }
 } // end of box_orig
+
+module box(part="all", pcbsize=[10,10,10], outset=[2,2,0.5], foot_pos=[],
+           foot_inset=undef,
+           foot_diam=4.5, foot_hole_diam=1, foot_height=2.5,
+           wall=2, clearance=1, filet=2.1, vent_width=1.5,
+           shell_color="Orange", panel_color="OrangeRed",
+           resolution=50) {
+  Length = pcbsize.x + 2*outset.x + 6*wall + 2*clearance;
+  Width = pcbsize.y + 2*outset.y + 2*wall;
+  Height = pcbsize.z + foot_height + 2*outset.z + 2*wall;
+
+  FootPos = concat(foot_pos, foot_inset==undef ? [] : [
+                [foot_inset.x,foot_inset.y],
+                [pcbsize.x-foot_inset.x,foot_inset.y],
+                [foot_inset.x,pcbsize.y-foot_inset.y],
+                [pcbsize.x-foot_inset.x,pcbsize.y-foot_inset.y]
+            ]);
+
+  box_orig(part=part, Length=Length, Width=Width, Thick=wall, Filet=filet,
+           m=clearance, Couleur1=shell_color, Couleur2=panel_color,
+           Resolution=resolution, Vent=(vent_width > 0), Vent_width=vent_width,
+           PCBPosX=outset.x, PCBPosY=outset.y,
+           PCBLength=pcbsize.x, PCBWidth=pcbsize.y,
+           PCBFeet = (foot_height > 0) || part=="pcb",
+           FootDia=foot_diam, FootHole=foot_hole_diam,
+           FootHeight=(foot_height > 0) ? foot_height + outset.z : 0,
+           FootPos=FootPos);
+}
