@@ -1,5 +1,5 @@
 /* [Global] */
-part = "box1-bshell"; // [box1-tshell,box1-bshell,box1-fpanel,box1-bpanel,box2-tshell,box2-bshell,box2-fpanel,box2-bpanel]
+part = "mbox-bshell"; // [box1-tshell,box1-bshell,box1-fpanel,box1-bpanel,box2-tshell,box2-bshell,box2-fpanel,box2-bpanel,mbox-tshell,mbox-bshell,mbox-fpanel,mbox-bpanel]
 /* [Hidden] */
 use <./box.scad>
 use <common/strutil.scad>
@@ -10,6 +10,7 @@ module piece(part) {
   p = split(part, "-");
   if (p[0]=="box1") ex_box1(part=p[1]); // Extrudrboard thunk box
   if (p[0]=="box2") ex_box2(part=p[1]); // Extrudrboard x2 box
+  if (p[0]=="mbox") mosfet_box(part=p[1]); // Mosfet heat controller box
 }
 
 // open side is y
@@ -36,4 +37,14 @@ module ex_box2(part="all") {
       foot_height=4 /* M3x8 screws */,
       foot_hole_diam=2.5 /* 2.5mm for M3 tap drill + 0.5 hole expansion*/,
       foot_diam=5.6);
+}
+
+module mosfet_box(part="all") {
+  box(part=part,
+      pcbsize=[88,67,32],
+      vent_width=2,
+      foot_inset=[(88-80)/2, (67-59)/2],
+      foot_height=4 /* M3x8 screws */,
+      foot_hole_diam=2.5 /* 2.5mm for M3 tap drill + 0.5 hole expansion*/,
+      foot_diam=8);
 }
