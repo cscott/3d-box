@@ -136,20 +136,24 @@ module pcb_board(clearance=0) {
       cube([3.2*inch()+c2, 1.5*inch()+c2, 1.6+c2]);
 }
 
-module atx_connector(extra=0, clearance=0) {
+module atx_connector(extra=0, clearance=0, down=0) {
   c=clearance; c2=2*clearance;
-  translate([.49*inch()-c, .25*inch()-extra-c, 1.6-c])// to mounting hole
+  translate([.49*inch()-c, .25*inch()-extra-c, 1.6-c-down])// to mounting hole
     // from data sheet
-    translate([(46.2-51.8)/2, -6.6, 0])
-      cube([51.8+c2, 12.6+extra+c2, 10+c2]);
+    translate([(46.2-51.8)/2, -6.6, 0]) {
+      cube([51.8+c2, 12.6+extra+c2, 10+c2+down]);
+      // notch at top
+      translate([(51.8+c2)/2 - (14+c2)/2, 0, down])
+        cube([14+c2,12.6+extra+c2,10+c2+(2+c)]);
+    }
 }
 
-module usb_connector(extra=0, clearance=0) {
+module usb_connector(extra=0, clearance=0, down=0) {
   c=clearance; c2=2*clearance;
-  translate([2.54*inch()-c, .25*inch()-extra-c, 1.6-c]) // to mounting hole
+  translate([2.54*inch()-c, .25*inch()-extra-c, 1.6-c-down]) // to mounting hole
     // from data sheet
     translate([(13.14-14.3)/2,-10.3,0])
-      cube([14.3+c2,14.4+extra+c2,c2+1.5+5.12+(7-5.12)/2]);
+      cube([14.3+c2,14.4+extra+c2,c2+1.5+5.12+(7-5.12)/2+down]);
 }
 
 module rpi_connector(extra=0, clearance=0) {

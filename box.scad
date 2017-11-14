@@ -251,7 +251,7 @@ module Feet(Thick=Thick,Filet=Filet,FootDia=FootDia,FootHole=FootHole,FootHeight
 
 ////////////////////////////// - 4 Feet - //////////////////////////////////////////
    translate([3*Thick+m,Thick,Thick])
-   for(pos = FootPos) translate(pos)
+   for(pos = FootPos) translate([pos.x,pos.y,0])
         foot(FootDia,FootHole,FootHeight,Thick=Thick,Filet=Filet,FootDia=FootDia,FootHeight=FootHeight,Couleur1=Couleur1);
    }
 } // Fin du module Feet
@@ -457,5 +457,10 @@ module box(part="all", pcbsize=[10,10,10], outset=[2,2,0.5], foot_pos=[],
            PCBFeet = (foot_height > 0) || part=="pcb",
            FootDia=foot_diam, FootHole=foot_hole_diam,
            FootHeight=(foot_height > 0) ? foot_height + outset.z : 0,
-           FootPos=FootPos);
+           FootPos=FootPos) {
+          if ($nchildren>0) children(0);
+          if ($nchildren>1) children(1);
+          if ($nchildren>2) children(2);
+          if ($nchildren>3) children(3);
+  }
 }
