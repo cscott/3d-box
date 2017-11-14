@@ -4,7 +4,7 @@
 
 /* [Global] */
 // This design is composed of a number of separate printable parts:
-part = "2_all"; // [1_top:Box #1 Top,1_bottom:Box #1 Bottom,1_all:Box #1 Assembled, 2_top:Box #2 Top,2_bottom:Box #2 Bottom,2_all:Box #2 Assembled]
+part = "1_all"; // [1_top:RPi Box Top,1_bottom:RPi Box Bottom,1_all:RPi Box Assembled, 2_top:ATX Power Box Top,2_bottom:ATX Power Box Bottom,2_all:ATX Power Box Assembled]
 
 /* [Hidden] */
 
@@ -18,19 +18,19 @@ main(part);
 
 module main(part="2_all") {
   if (part=="1_bottom" || part=="1_all") {
-    box_bottom();
+    rpi_box_bottom();
   }
   if (part=="1_top" || part=="1_all") {
-    box_top();
+    rpi_box_top();
   }
   if (part=="1_pcb" || part=="1_all") {
     board();
   }
   if (part=="2_bottom" || part=="2_all") {
-    box2_bottom();
+    power_box_bottom();
   }
   if (part=="2_top" || part=="2_all") {
-    box2_top();
+    power_box_top();
   }
   if (part=="2_pcb" || part=="2_all") {
     board(atx=true, usb=false, rpi=false, button=false, screw=false);
@@ -40,9 +40,9 @@ module main(part="2_all") {
   }
 }
 
-module box_top(spaceup=20) {
+module rpi_box_top(spaceup=20) {
   intersection() {
-    box(spaceup=spaceup);
+    rpi_box(spaceup=spaceup);
     splitter();
   }
   push_button(spaceup=spaceup);
@@ -53,9 +53,9 @@ module box_top(spaceup=20) {
   }
 }
 
-module box_bottom() {
+module rpi_box_bottom() {
   difference() {
-    box();
+    rpi_box();
     splitter();
   }
 }
@@ -65,7 +65,7 @@ module splitter() {
     cube([200,200,200]);
 }
 
-module box(thick=2, spaceup=15 /* should be >10 */,
+module rpi_box(thick=2, spaceup=15 /* should be >10 */,
            atx=true, usb=true, rpi=true, button=true, screw=true) {
   spacexy=2; spacedown=5;
   difference() {
@@ -247,10 +247,10 @@ module rocker(h=10, spacexy=2, thick=2, hole=false) {
   }
 }
 
-module box2(spaceup=33) {
+module power_box(spaceup=33) {
   thick=2;
   difference() {
-    box(thick=thick, spaceup=spaceup, atx=true, usb=false, rpi=false, button=false, screw=false);
+    rpi_box(thick=thick, spaceup=spaceup, atx=true, usb=false, rpi=false, button=false, screw=false);
     rocker(hole=true);
     bananas();
   }
@@ -265,16 +265,16 @@ module box2(spaceup=33) {
   }
 }
 
-module box2_top() {
+module power_box_top() {
   difference() {
-    box2();
+    power_box();
     splitter2();
   }
 }
 
-module box2_bottom() {
+module power_box_bottom() {
   intersection() {
-    box2();
+    power_box();
     splitter2();
   }
 }
