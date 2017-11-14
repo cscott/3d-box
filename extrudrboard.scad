@@ -8,13 +8,13 @@ piece(part);
 
 module piece(part) {
   p = split(part, "-");
-  if (p[0]=="box1") ex_box1(part=p[1]);
-  if (p[0]=="box2") ex_box2(part=p[1]);
+  if (p[0]=="box1") ex_box1(part=p[1]); // Extrudrboard thunk box
+  if (p[0]=="box2") ex_box2(part=p[1]); // Extrudrboard x2 box
 }
 
 // open side is y
 module ex_box1(part="all") {
-  box(part=part, pcbsize=[46,44,22],
+  box(part=part, pcbsize=[46,44,22], outset=[2,4,0.5],
       foot_inset=[0,0], foot_diam=3, foot_hole_diam=0,
       foot_height=2.5);
 }
